@@ -30,12 +30,23 @@ class Rotator():
         self.twist = Twist()
 
         r = rospy.Rate(10)
+        rotate_time = 8
+        # the move duration in seconds
+        move_time = 10
+        # time when the robot started moving
+        start_time = time.time()
         while not rospy.is_shutdown():
-            self.twist.angular.z = 0.1
+            self.twist.angular.z = 0.5
             self._cmd_pub.publish(self.twist)
             rospy.loginfo('Rotating robot: %s', self.twist)
-            r.sleep()
-
+            # stop rotating and start moving straight once the rotation duration is reached
+            if time.time() - start_time > rotate_time:
+                self.twist.angular.z = 0.0
+                self._cmd_pub.publish(self.twist)
+                self.twist.linear.x = 0.3
+                self._cmd_pub.publish(self.twist)
+                rospy.loginfo('Rotating robot: %s', self.twist)
+                r.sleep()
 
 def main():
     rospy.init_node('rotate')
